@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import Link from "next/link"
 import { Package, Settings, ShoppingBag, User, LogIn, UserPlus, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -21,6 +22,7 @@ import { LocationPicker } from "@/components/location-picker"
 export default function AccountPage() {
   const router = useRouter()
   const { user, isLoggedIn, orders, logout, updateUserInfo, notificationSettings, updateNotificationSettings } = useStore()
+  const { theme, setTheme } = useTheme()
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -402,6 +404,25 @@ export default function AccountPage() {
                   >
                     حفظ الإعدادات
                   </Button>
+                </div>
+                <Separator />
+                <div>
+                  <h3 className="font-medium mb-2">المظهر</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>اختر الوضع</Label>
+                      <p className="text-xs text-muted-foreground">الوضع الليلي أو الوضع الأبيض</p>
+                    </div>
+                    <select
+                      className="h-9 rounded-md border px-3 bg-background"
+                      value={theme || "system"}
+                      onChange={(e) => setTheme(e.target.value)}
+                    >
+                      <option value="light">الوضع الأبيض</option>
+                      <option value="dark">الوضع الليلي</option>
+                      <option value="system">حسب النظام</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -759,6 +759,13 @@ export const useStore = create<StoreState>()(
             }
           } catch (e) {
             console.error("Error saving order to Firebase:", e)
+            try {
+              await fetch("/api/orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newOrder),
+              })
+            } catch {}
           }
         })()
 
@@ -784,6 +791,16 @@ export const useStore = create<StoreState>()(
             }
           } catch (e) {
              console.error("Error updating order status in Firebase:", e)
+             try {
+               // تحديث في الذاكرة عبر API إن لزم
+               await fetch("/api/orders", {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+                 body: JSON.stringify(
+                   get().orders.find((o) => o.id === orderId) || { id: orderId, status, customer: get().user, items: [], total: 0, date: new Date().toISOString() }
+                 ),
+               })
+             } catch {}
           }
         })()
 
@@ -892,6 +909,23 @@ export const useStore = create<StoreState>()(
             })
           } catch (e) {
             console.error("Error subscribing to orders:", e)
+            try {
+              const res = await fetch("/api/orders")
+              const data = await res.json()
+              const fallback: Order[] = (data.orders || []).filter((o: any) => o && o.id && o.customer).map((o: any) => ({
+                id: o.id,
+                customer: o.customer,
+                items: Array.isArray(o.items) ? o.items : [],
+                total: Number(o.total || 0),
+                status: o.status || "قيد المعالجة",
+                date: o.date || new Date().toISOString(),
+                notes: o.notes,
+                appliedDiscountCode: o.appliedDiscountCode,
+                shippingCost: o.shippingCost,
+                governorate: o.governorate,
+              }))
+              set({ orders: fallback.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) })
+            } catch {}
           }
         })()
         
