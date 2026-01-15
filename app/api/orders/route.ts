@@ -22,7 +22,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "invalid_order" }, { status: 400 })
     }
     const store = getStore()
-    store.orders = [order, ...store.orders]
+    const existsIndex = store.orders.findIndex((o) => o.id === order.id)
+    if (existsIndex >= 0) {
+      store.orders[existsIndex] = order
+    } else {
+      store.orders = [order, ...store.orders]
+    }
     return NextResponse.json({ success: true, id: order.id })
   } catch {
     return NextResponse.json({ error: "server_error" }, { status: 500 })

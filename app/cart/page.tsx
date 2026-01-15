@@ -191,6 +191,7 @@ export default function CartPage() {
     const [isDragging, setIsDragging] = useState(false)
     const trackRef = useState<HTMLDivElement | null>(null)[0]
     const [trackEl, setTrackEl] = useState<HTMLDivElement | null>(null)
+    const [showOverlay, setShowOverlay] = useState(false)
 
     const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
       setIsDragging(true)
@@ -210,42 +211,52 @@ export default function CartPage() {
     const endDrag = () => {
       if (!isDragging) return
       setIsDragging(false)
-      if (dragPercent >= 85) {
-        onConfirm()
-        setDragPercent(0)
+      if (dragPercent >= 95) {
+        setShowOverlay(true)
+        setTimeout(() => {
+          onConfirm()
+          setDragPercent(0)
+          setShowOverlay(false)
+        }, 900)
       } else {
         setDragPercent(0)
       }
     }
 
     return (
-      <div
-        ref={setTrackEl}
-        className="relative w-full h-14 rounded-full bg-muted overflow-hidden select-none"
-        onMouseMove={moveDrag}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        onTouchMove={moveDrag}
-        onTouchEnd={endDrag}
-      >
-        <div className="absolute inset-y-0 left-0 bg-primary/20 transition-[width] duration-150" style={{ width: `${dragPercent}%` }} />
+      <div className="space-y-2">
+        <div className="text-center font-medium">{label}</div>
         <div
-          className={`absolute inset-y-1 left-1 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg 
-          ${dragPercent > 80 ? "animate-bounce" : ""}`}
-          style={{ transform: `translateX(${Math.max(dragPercent - 2, 0)}%)` }}
-          onMouseDown={startDrag}
-          onTouchStart={startDrag}
+          ref={setTrackEl}
+          className="relative w-full h-14 rounded-full bg-muted overflow-hidden select-none border border-primary/30"
+          onMouseMove={moveDrag}
+          onMouseUp={endDrag}
+          onMouseLeave={endDrag}
+          onTouchMove={moveDrag}
+          onTouchEnd={endDrag}
         >
-          <CheckCircle className="h-5 w-5" />
+          <div className="absolute inset-y-0 left-0 bg-primary/20 transition-[width] duration-150" style={{ width: `${dragPercent}%` }} />
+          <div
+            className="absolute inset-y-1 left-1 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg"
+            style={{ transform: `translateX(${Math.max(dragPercent - 2, 0)}%)` }}
+            onMouseDown={startDrag}
+            onTouchStart={startDrag}
+          >
+            <CheckCircle className="h-5 w-5" />
+          </div>
+          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1">
+            {[...Array(5)].map((_, i) => (
+              <span key={i} className={`h-[3px] w-6 rounded-full ${i * 20 < dragPercent ? "bg-primary" : "bg-muted-foreground/20"}`} />
+            ))}
+          </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="font-medium">{label}</span>
-        </div>
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1">
-          {[...Array(5)].map((_, i) => (
-            <span key={i} className={`h-[3px] w-6 rounded-full ${i * 20 < dragPercent ? "bg-primary" : "bg-muted-foreground/20"}`} />
-          ))}
-        </div>
+        {showOverlay && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
+            <div className="h-24 w-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center animate-[spin_0.9s_linear]">
+              <CheckCircle className="h-12 w-12 animate-[zoom-in_0.9s_ease]" />
+            </div>
+          </div>
+        )}
       </div>
     )
   }

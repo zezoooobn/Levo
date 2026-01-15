@@ -417,7 +417,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             <div className="relative flex flex-col sm:flex-row gap-4 mt-6">
               <Button
                 size="lg"
-                className={`flex-1 ${getCategoryButtonColor(product.category)} h-14 text-base sm:h-12 sm:text-sm`}
+                className={`flex-1 ${getCategoryButtonColor(product.category)} h-16 text-base sm:h-12 sm:text-sm`}
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
@@ -426,7 +426,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button
                 variant="outline"
                 size="lg"
-                className={`flex-1 ${inWishlist ? "text-red-500" : ""} h-14 text-base sm:h-12 sm:text-sm`}
+                className={`flex-1 ${inWishlist ? "text-red-500" : ""} h-16 text-base sm:h-12 sm:text-sm`}
                 onClick={handleWishlist}
               >
                 <Heart className={`mr-2 h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />

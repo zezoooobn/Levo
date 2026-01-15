@@ -735,10 +735,16 @@ export const useStore = create<StoreState>()(
           type: "order",
         })
 
-        // حفظ الطلب في Firebase
         ;(async () => {
           try {
             await ensureAuth()
+            try {
+              await fetch("/api/orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newOrder),
+              })
+            } catch {}
             await addDoc(collection(db, "orders"), {
               ...newOrder,
               createdAt: serverTimestamp(),
@@ -831,6 +837,7 @@ export const useStore = create<StoreState>()(
 
       subscribeToOrders: () => {
         let unsubscribe: () => void = () => {}
+        let intervalId: any = null
         
         ;(async () => {
           try {
@@ -902,11 +909,55 @@ export const useStore = create<StoreState>()(
                 }
               })
               
-              // تحديث القائمة فقط إذا كان هناك تغيير
-              // لاحظ: قد نحتاج لدمج الطلبات المحلية مع السحابة أو استبدالها
-              // هنا سنستبدل لتضمن التزامن
-              set({ orders: orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) })
+              ;(async () => {
+                try {
+                  const res = await fetch("/api/orders")
+                  const data = await res.json()
+                  const apiOrders: Order[] = (data.orders || []).filter((o: any) => o && o.id && o.customer).map((o: any) => ({
+                    id: o.id,
+                    customer: o.customer,
+                    items: Array.isArray(o.items) ? o.items : [],
+                    total: Number(o.total || 0),
+                    status: o.status || "قيد المعالجة",
+                    date: o.date || new Date().toISOString(),
+                    notes: o.notes,
+                    appliedDiscountCode: o.appliedDiscountCode,
+                    shippingCost: o.shippingCost,
+                    governorate: o.governorate,
+                  }))
+                  const map = new Map<string, Order>()
+                  ;[...orders, ...apiOrders].forEach((o) => map.set(o.id, o))
+                  const merged = Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  set({ orders: merged })
+                } catch {
+                  set({ orders: orders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) })
+                }
+              })()
             })
+            
+            intervalId = setInterval(async () => {
+              try {
+                const res = await fetch("/api/orders")
+                const data = await res.json()
+                const apiOrders: Order[] = (data.orders || []).filter((o: any) => o && o.id && o.customer).map((o: any) => ({
+                  id: o.id,
+                  customer: o.customer,
+                  items: Array.isArray(o.items) ? o.items : [],
+                  total: Number(o.total || 0),
+                  status: o.status || "قيد المعالجة",
+                  date: o.date || new Date().toISOString(),
+                  notes: o.notes,
+                  appliedDiscountCode: o.appliedDiscountCode,
+                  shippingCost: o.shippingCost,
+                  governorate: o.governorate,
+                }))
+                const existing = get().orders
+                const map = new Map<string, Order>()
+                ;[...existing, ...apiOrders].forEach((o) => map.set(o.id, o))
+                const merged = Array.from(map.values()).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                set({ orders: merged })
+              } catch {}
+            }, 5000)
           } catch (e) {
             console.error("Error subscribing to orders:", e)
             try {
@@ -929,7 +980,10 @@ export const useStore = create<StoreState>()(
           }
         })()
         
-        return () => unsubscribe()
+        return () => {
+          if (unsubscribe) unsubscribe()
+          if (intervalId) clearInterval(intervalId)
+        }
       },
       
       // مزامنة الطلبات المخزنة محلياً إلى Firestore لمرة واحدة

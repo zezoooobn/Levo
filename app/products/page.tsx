@@ -20,7 +20,7 @@ export default function ProductsPage() {
   // وأضف useEffect لتحميل المنتجات من localStorage
 
   // تعديل تعريف المنتجات ليستخدم useState
-  const [allProducts, setAllProducts] = useState([
+  const [allProducts, setAllProducts] = useState<any[]>([
     {
       id: 1,
       name: "قميص كاجوال",
@@ -278,18 +278,8 @@ export default function ProductsPage() {
       sizes: ["S", "M", "L"],
       colors: ["أبيض", "أسود", "بيج"],
     },
-    {
-      id: 24,
-      name: "جاكيت جينز",
-      price: 499,
-      originalPrice: 599,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      sizes: ["M", "L", "XL"],
-      colors: ["أزرق", "أسود"],
-    },
   ])
+  const [isLoaded, setIsLoaded] = useState(false)
 
   // التحميل من Firestore أولاً ثم من localStorage كنسخة احتياطية
   useEffect(() => {
@@ -315,6 +305,7 @@ export default function ProductsPage() {
             }
           })
           setAllProducts(formatted)
+          setFilteredProducts(formatted)
           return
         }
       } catch (e) {}
@@ -338,9 +329,11 @@ export default function ProductsPage() {
               stock: product.stock,
             }))
             setAllProducts(formattedProducts)
+            setFilteredProducts(formattedProducts)
           } catch {}
         }
       }
+      setIsLoaded(true)
     })()
   }, [])
 
@@ -602,7 +595,7 @@ export default function ProductsPage() {
             )}
           </div>
 
-          {filteredProducts.length > 0 ? (
+          {isLoaded && filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {currentProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -610,8 +603,8 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="text-center py-12 border rounded-lg">
-              <h3 className="text-xl font-medium mb-2">لا توجد منتجات</h3>
-              <p className="text-muted-foreground mb-4">لا توجد منتجات تطابق معايير البحث الخاصة بك</p>
+              <h3 className="text-xl font-medium mb-2">{isLoaded ? "لا توجد منتجات" : "جاري تحميل المنتجات..."}</h3>
+              <p className="text-muted-foreground mb-4">{isLoaded ? "لا توجد منتجات تطابق معايير البحث الخاصة بك" : ""}</p>
               <Button onClick={clearAllFilters}>مسح الفلاتر</Button>
             </div>
           )}
