@@ -14,274 +14,34 @@ import { ProductFilters } from "@/components/product-filters"
 export default function ProductsPage() {
   const searchParams = useSearchParams()
 
-  // تعديل الكود ليقرأ المنتجات من localStorage
+  // تحميل فوري من التخزين المحلي إن وجد، بدون منتجات وهمية
+  const [allProducts, setAllProducts] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("admin-products")
+      if (stored) {
+        try {
+          const adminProducts = JSON.parse(stored)
+          return adminProducts.map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            originalPrice: product.originalPrice || product.price,
+            image: product.images?.[0] || "/placeholder.svg?height=400&width=300",
+            category: product.category,
+            isNew: product.isNew,
+            isSale: product.isSale,
+            sizes: product.sizes || [],
+            colors: product.colors || [],
+            description: product.description,
+            stock: product.stock,
+          }))
+        } catch {}
+      }
+    }
+    return []
+  })
 
-  // تأكد من أن الصفحة تستخدم "use client"
-  // وأضف useEffect لتحميل المنتجات من localStorage
-
-  // تعديل تعريف المنتجات ليستخدم useState
-  const [allProducts, setAllProducts] = useState<any[]>([
-    {
-      id: 1,
-      name: "قميص كاجوال",
-      price: 299,
-      originalPrice: 399,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      isSale: true,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["أسود", "أبيض", "أزرق"],
-    },
-    {
-      id: 2,
-      name: "فستان أنيق",
-      price: 499,
-      originalPrice: 599,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: true,
-      isSale: false,
-      sizes: ["S", "M", "L"],
-      colors: ["أحمر", "أسود"],
-    },
-    {
-      id: 3,
-      name: "بنطلون جينز",
-      price: 349,
-      originalPrice: 449,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      isSale: true,
-      sizes: ["30", "32", "34", "36"],
-      colors: ["أزرق", "أسود"],
-    },
-    {
-      id: 4,
-      name: "تيشيرت قطني",
-      price: 149,
-      originalPrice: 199,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "أطفال",
-      isNew: false,
-      isSale: true,
-      sizes: ["S", "M", "L"],
-      colors: ["أبيض", "أزرق", "أحمر"],
-    },
-    {
-      id: 5,
-      name: "بلوزة صيفية",
-      price: 249,
-      originalPrice: 299,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: true,
-      sizes: ["S", "M", "L"],
-      colors: ["أبيض", "وردي"],
-    },
-    {
-      id: 6,
-      name: "قميص رسمي",
-      price: 399,
-      originalPrice: 399,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      sizes: ["M", "L", "XL"],
-      colors: ["أبيض", "أزرق فاتح"],
-    },
-    {
-      id: 7,
-      name: "فستان أطفال",
-      price: 199,
-      originalPrice: 249,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "أطفال",
-      isNew: true,
-      sizes: ["4", "6", "8", "10"],
-      colors: ["وردي", "أزرق"],
-    },
-    {
-      id: 8,
-      name: "حذاء رياضي",
-      price: 499,
-      originalPrice: 599,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      sizes: ["40", "41", "42", "43", "44"],
-      colors: ["أسود", "أبيض", "رمادي"],
-    },
-    {
-      id: 9,
-      name: "بنطلون رياضي",
-      price: 299,
-      originalPrice: 349,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      sizes: ["M", "L", "XL"],
-      colors: ["أسود", "رمادي"],
-    },
-    {
-      id: 10,
-      name: "تيشيرت مطبوع",
-      price: 179,
-      originalPrice: 229,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: false,
-      sizes: ["S", "M", "L"],
-      colors: ["أبيض", "أسود", "أحمر"],
-    },
-    {
-      id: 11,
-      name: "جاكيت شتوي",
-      price: 799,
-      originalPrice: 999,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      sizes: ["M", "L", "XL", "XXL"],
-      colors: ["أسود", "بني"],
-    },
-    {
-      id: 12,
-      name: "فستان سهرة",
-      price: 899,
-      originalPrice: 1099,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: false,
-      sizes: ["S", "M", "L"],
-      colors: ["أسود", "أحمر", "ذهبي"],
-    },
-    {
-      id: 13,
-      name: "تيشيرت مطبوع 2",
-      price: 189,
-      originalPrice: 239,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["أبيض", "أسود", "أزرق"],
-    },
-    {
-      id: 14,
-      name: "بنطلون قماش",
-      price: 399,
-      originalPrice: 499,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      sizes: ["30", "32", "34", "36", "38"],
-      colors: ["أسود", "بيج", "كحلي"],
-    },
-    {
-      id: 15,
-      name: "فستان كاجوال",
-      price: 349,
-      originalPrice: 399,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: true,
-      sizes: ["S", "M", "L"],
-      colors: ["أزرق", "أخضر", "بنفسجي"],
-    },
-    {
-      id: 16,
-      name: "بلوزة شتوية",
-      price: 299,
-      originalPrice: 349,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: false,
-      sizes: ["S", "M", "L", "XL"],
-      colors: ["أحمر", "أسود", "رمادي"],
-    },
-    {
-      id: 17,
-      name: "سويت شيرت",
-      price: 249,
-      originalPrice: 299,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      sizes: ["M", "L", "XL", "XXL"],
-      colors: ["أسود", "رمادي", "أزرق"],
-    },
-    {
-      id: 18,
-      name: "بنطلون جينز أطفال",
-      price: 199,
-      originalPrice: 249,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "أطفال",
-      isNew: false,
-      sizes: ["4", "6", "8", "10", "12"],
-      colors: ["أزرق", "أسود"],
-    },
-    {
-      id: 19,
-      name: "قميص مقلم",
-      price: 329,
-      originalPrice: 399,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: true,
-      sizes: ["M", "L", "XL"],
-      colors: ["أبيض", "أزرق", "وردي"],
-    },
-    {
-      id: 20,
-      name: "فستان رسمي",
-      price: 699,
-      originalPrice: 899,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: false,
-      sizes: ["S", "M", "L"],
-      colors: ["أسود", "أحمر", "أزرق"],
-    },
-    {
-      id: 21,
-      name: "تيشيرت أطفال",
-      price: 129,
-      originalPrice: 159,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "أطفال",
-      isNew: true,
-      sizes: ["4", "6", "8", "10", "12"],
-      colors: ["أبيض", "أزرق", "أحمر", "أصفر"],
-    },
-    {
-      id: 22,
-      name: "بنطلون قصير",
-      price: 199,
-      originalPrice: 249,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "رجالي",
-      isNew: false,
-      sizes: ["30", "32", "34", "36"],
-      colors: ["بيج", "أسود", "أزرق"],
-    },
-    {
-      id: 23,
-      name: "بلوزة مطرزة",
-      price: 399,
-      originalPrice: 499,
-      image: "/placeholder.svg?height=400&width=300",
-      category: "نسائي",
-      isNew: true,
-      sizes: ["S", "M", "L"],
-      colors: ["أبيض", "أسود", "بيج"],
-    },
-  ])
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  // التحميل من Firestore أولاً ثم من localStorage كنسخة احتياطية
+  // التحميل من Firestore مع سقوط آمن للتخزين المحلي (يحدّث البيانات بدون شاشة تحميل)
   useEffect(() => {
     ;(async () => {
       try {
@@ -333,7 +93,6 @@ export default function ProductsPage() {
           } catch {}
         }
       }
-      setIsLoaded(true)
     })()
   }, [])
 
@@ -595,7 +354,7 @@ export default function ProductsPage() {
             )}
           </div>
 
-          {isLoaded && filteredProducts.length > 0 ? (
+          {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {currentProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -603,8 +362,8 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="text-center py-12 border rounded-lg">
-              <h3 className="text-xl font-medium mb-2">{isLoaded ? "لا توجد منتجات" : "جاري تحميل المنتجات..."}</h3>
-              <p className="text-muted-foreground mb-4">{isLoaded ? "لا توجد منتجات تطابق معايير البحث الخاصة بك" : ""}</p>
+              <h3 className="text-xl font-medium mb-2">لا توجد منتجات</h3>
+              <p className="text-muted-foreground mb-4">لا توجد منتجات تطابق معايير البحث الخاصة بك</p>
               <Button onClick={clearAllFilters}>مسح الفلاتر</Button>
             </div>
           )}
