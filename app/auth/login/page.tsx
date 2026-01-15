@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -31,7 +29,7 @@ export default function LoginPage() {
   const [otpSent, setOtpSent] = useState(false)
   const [otpCode, setOtpCode] = useState("")
 
-  React.useEffect(() => {
+  useEffect(() => {
     ;(async () => {
       const user = await getGoogleRedirectUser()
       if (user) {
