@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { listComplaintsByUser, createComplaint } from "@/lib/dev-complaints-memory"
 import { adminDb, serverTimestamp } from "@/lib/firebase/admin"
 
+export const runtime = "nodejs"
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()

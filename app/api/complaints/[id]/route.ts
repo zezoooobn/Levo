@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { updateComplaintStatus } from "@/lib/dev-complaints-memory"
 import { adminDb } from "@/lib/firebase/admin"
 
+export const runtime = "nodejs"
+
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { status } = await request.json()
