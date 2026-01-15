@@ -873,7 +873,7 @@ export function ProductsPanel() {
   }
 
   const handleAddImageUrl = (url: string, index: number, isEdit = false) => {
-    if (!url) return
+    // السماح بالقيم الفارغة للحذف
     if (isEdit && currentProduct) {
       const updatedImages = [...(currentProduct.images || [])]
       updatedImages[index] = url
@@ -1115,40 +1115,43 @@ export function ProductsPanel() {
                     <Label className="text-gray-700">صور المنتج</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {[0, 1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="flex h-24 cursor-pointer items-center justify-center rounded-md border border-dashed border-gray-300 hover:border-primary relative overflow-hidden"
-                          onClick={() => triggerFileInput(i)}
-                        >
-                          {newProduct.images && newProduct.images[i] ? (
-                            <img
-                              src={newProduct.images[i] || "/placeholder.svg"}
-                              alt={`صورة المنتج ${i + 1}`}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center justify-center text-gray-400">
-                              <Upload className="h-8 w-8 mb-1" />
-                              <span className="text-xs">اضغط لإضافة صورة</span>
-                            </div>
-                          )}
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            ref={(el) => {
-                              fileInputRefs.current[i] = el
-                            }}
-                            onChange={(e) => handleImageUpload(e, i)}
-                          />
-                          <div className="absolute bottom-1 left-1 right-1 px-1">
-                            <Input
-                              placeholder="رابط الصورة"
-                              value={newProduct.images?.[i] || ""}
-                              onChange={(e) => handleAddImageUrl(e.target.value, i)}
-                              className="h-7 text-xs bg-background/80"
+                        <div key={i} className="space-y-2">
+                          <div
+                            className="flex h-24 cursor-pointer items-center justify-center rounded-md border border-dashed border-gray-300 hover:border-primary relative overflow-hidden"
+                            onClick={() => triggerFileInput(i)}
+                          >
+                            {newProduct.images && newProduct.images[i] ? (
+                              <img
+                                src={newProduct.images[i] || "/placeholder.svg"}
+                                alt={`صورة المنتج ${i + 1}`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex flex-col items-center justify-center text-gray-400">
+                                <Upload className="h-8 w-8 mb-1" />
+                                <span className="text-xs">اضغط لإضافة صورة</span>
+                              </div>
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              ref={(el) => {
+                                fileInputRefs.current[i] = el
+                              }}
+                              onChange={(e) => handleImageUpload(e, i)}
                             />
                           </div>
+                          <Input
+                            placeholder={
+                              newProduct.colors?.[i]
+                                ? `رابط صورة اللون ${newProduct.colors[i]}`
+                                : "رابط الصورة"
+                            }
+                            value={newProduct.images?.[i] || ""}
+                            onChange={(e) => handleAddImageUrl(e.target.value, i)}
+                            className="h-9 text-xs"
+                          />
                         </div>
                       ))}
                     </div>
@@ -1409,40 +1412,43 @@ export function ProductsPanel() {
                       <Label className="text-gray-700">صور المنتج</Label>
                       <div className="grid grid-cols-2 gap-2">
                         {[0, 1, 2, 3].map((i) => (
-                          <div
-                            key={i}
-                            className="flex h-24 cursor-pointer items-center justify-center rounded-md border border-dashed border-gray-300 hover:border-primary relative overflow-hidden"
-                            onClick={() => triggerFileInput(i, true)}
-                          >
-                            {currentProduct.images && currentProduct.images[i] ? (
-                              <img
-                                src={currentProduct.images[i] || "/placeholder.svg"}
-                                alt={`صورة المنتج ${i + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex flex-col items-center justify-center text-gray-400">
-                                <Upload className="h-8 w-8 mb-1" />
-                                <span className="text-xs">اضغط لإضافة صورة</span>
-                              </div>
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              ref={(el) => {
-                                editFileInputRefs.current[i] = el
-                              }}
-                              onChange={(e) => handleImageUpload(e, i, true)}
-                            />
-                            <div className="absolute bottom-1 left-1 right-1 px-1">
-                              <Input
-                                placeholder="رابط الصورة"
-                                value={currentProduct.images?.[i] || ""}
-                                onChange={(e) => handleAddImageUrl(e.target.value, i, true)}
-                                className="h-7 text-xs bg-background/80"
+                          <div key={i} className="space-y-2">
+                            <div
+                              className="flex h-24 cursor-pointer items-center justify-center rounded-md border border-dashed border-gray-300 hover:border-primary relative overflow-hidden"
+                              onClick={() => triggerFileInput(i, true)}
+                            >
+                              {currentProduct.images && currentProduct.images[i] ? (
+                                <img
+                                  src={currentProduct.images[i] || "/placeholder.svg"}
+                                  alt={`صورة المنتج ${i + 1}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex flex-col items-center justify-center text-gray-400">
+                                  <Upload className="h-8 w-8 mb-1" />
+                                  <span className="text-xs">اضغط لإضافة صورة</span>
+                                </div>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                ref={(el) => {
+                                  editFileInputRefs.current[i] = el
+                                }}
+                                onChange={(e) => handleImageUpload(e, i, true)}
                               />
                             </div>
+                            <Input
+                              placeholder={
+                                currentProduct.colors?.[i]
+                                  ? `رابط صورة اللون ${currentProduct.colors[i]}`
+                                  : "رابط الصورة"
+                              }
+                              value={currentProduct.images?.[i] || ""}
+                              onChange={(e) => handleAddImageUrl(e.target.value, i, true)}
+                              className="h-9 text-xs"
+                            />
                           </div>
                         ))}
                       </div>

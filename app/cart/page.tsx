@@ -244,7 +244,7 @@ export default function CartPage() {
           >
             <CheckCircle className="h-5 w-5" />
           </div>
-          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1">
+          <div className="absolute bottom-1 left-3 flex items-center gap-1">
             {[...Array(5)].map((_, i) => (
               <span key={i} className={`h-[3px] w-6 rounded-full ${i * 20 < dragPercent ? "bg-primary" : "bg-muted-foreground/20"}`} />
             ))}

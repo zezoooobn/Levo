@@ -278,11 +278,11 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <img
                 src={(product.images && product.images[currentImage]) || "/placeholder.svg"}
                 alt={`${product.name} - صورة ${currentImage + 1}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <button
-              aria-label="السابق"
+              aria-label="التالي"
               className="absolute top-1/2 -translate-y-1/2 right-2 z-10 p-2 rounded-full bg-background/70 backdrop-blur shadow hover:bg-background"
               onClick={() =>
                 setCurrentImage((prev) =>
@@ -293,7 +293,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <ChevronRight className="h-5 w-5" />
             </button>
             <button
-              aria-label="التالي"
+              aria-label="السابق"
               className="absolute top-1/2 -translate-y-1/2 left-2 z-10 p-2 rounded-full bg-background/70 backdrop-blur shadow hover:bg-background"
               onClick={() =>
                 setCurrentImage((prev) =>
@@ -303,7 +303,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <div className="absolute bottom-2 left-2 flex items-center gap-2">
               {Array.from({ length: product.images?.length || 1 }).map((_, i) => (
                 <button
                   key={i}
@@ -366,7 +366,13 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                           ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
                           : "hover:bg-primary/10"
                       }`}
-                      onClick={() => setSelectedColor(color)}
+                      onClick={() => {
+                        setSelectedColor(color)
+                        const colorIndex = (product.colors || []).indexOf(color)
+                        if (colorIndex >= 0) {
+                          setCurrentImage(Math.min(colorIndex, (product.images?.length || 1) - 1))
+                        }
+                      }}
                     >
                       {color}
                       {selectedColor === color && (

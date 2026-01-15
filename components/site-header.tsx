@@ -76,20 +76,8 @@ export function SiteHeader() {
           </SheetContent>
         </Sheet>
         <div className="mr-4 hidden md:flex">
-          <Link href="/" className={cn("flex items-center space-x-2", language === "ar" ? "ml-10" : "mr-10")}>
-            <div className="flex items-center">
-              <img
-                src="https://retail-orange-pgdgj5caab.edgeone.app/ChatGPT%20Image%20Jan%2013,%202026,%2008_02_32%20PM.png"
-                alt={language === "en" ? "Levo" : "ليڤو"}
-                className="h-7 w-auto block dark:hidden"
-              />
-              <img
-                src="https://zeroth-emerald-cva4yerssm.edgeone.app/ChatGPT%20Image%20Jan%2013,%202026,%2008_02_28%20PM.png"
-                alt={language === "en" ? "Levo" : "ليڤو"}
-                className="h-7 w-auto hidden dark:block"
-              />
-              <span className="font-bold text-xl ml-2">{language === "en" ? "Levo" : "ليڤو"}</span>
-            </div>
+          <Link href="/" className={cn("flex items-center", language === "ar" ? "ml-10" : "mr-10")}>
+            <span className="font-bold text-xl">{language === "en" ? "Levo" : "ليڤو"}</span>
           </Link>
           <nav className="flex items-center space-x-6 space-x-reverse text-sm font-medium">
             {routes.map((route) => (
