@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://levoclothes.vercel.app/"; // ← غيره برابط موقعك
+  const baseUrl = "https://levoclothes.vercel.app"; // ← غيره برابط موقعك
 
   return [
     {
