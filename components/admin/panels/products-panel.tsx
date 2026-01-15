@@ -700,7 +700,13 @@ export function ProductsPanel() {
       setProducts(updatedProducts)
       localStorage.setItem("admin-products", JSON.stringify(updatedProducts))
       try {
-        await setDoc(doc(db, "products", String(productToAdd.id)), productToAdd)
+        const firestoreProduct = {
+          ...productToAdd,
+          images: (productToAdd.images || []).map((img) =>
+            typeof img === "string" && img.startsWith("data:") ? "/placeholder.svg?height=400&width=300" : img,
+          ),
+        }
+        await setDoc(doc(db, "products", String(productToAdd.id)), firestoreProduct)
       } catch {}
 
       // إعادة تعيين النموذج
@@ -774,7 +780,13 @@ export function ProductsPanel() {
       setProducts(updatedProducts)
       localStorage.setItem("admin-products", JSON.stringify(updatedProducts))
       try {
-        await setDoc(doc(db, "products", String(updatedProduct.id)), updatedProduct, { merge: true })
+        const firestoreProduct = {
+          ...updatedProduct,
+          images: (updatedProduct.images || []).map((img) =>
+            typeof img === "string" && img.startsWith("data:") ? "/placeholder.svg?height=400&width=300" : img,
+          ),
+        }
+        await setDoc(doc(db, "products", String(updatedProduct.id)), firestoreProduct, { merge: true })
       } catch {}
       setIsEditProductOpen(false)
 
