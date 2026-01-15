@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "@/components/ui/use-toast"
 import { useStore } from "@/lib/store"
-import { signInWithGoogle } from "@/lib/firebase/client"
+import { signInWithGoogle, getGoogleRedirectUser } from "@/lib/firebase/client"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -30,6 +30,16 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [otpCode, setOtpCode] = useState("")
+
+  React.useEffect(() => {
+    ;(async () => {
+      const user = await getGoogleRedirectUser()
+      if (user) {
+        useStore.getState().loginWithGoogle(user)
+        router.push(redirectPath as string)
+      }
+    })()
+  }, [])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}

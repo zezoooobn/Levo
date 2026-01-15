@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app"
 import { getAnalytics, isSupported } from "firebase/analytics"
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInAnonymously } from "firebase/auth"
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInAnonymously, signInWithRedirect, getRedirectResult } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
 // نقرأ الإعدادات من متغيرات البيئة (آمنة للعميل لأنها NEXT_PUBLIC)
@@ -35,7 +35,27 @@ export async function ensureAuth() {
 export async function signInWithGoogle() {
   if (typeof window === "undefined" || !auth) return null
   const provider = new GoogleAuthProvider()
-  const result = await signInWithPopup(auth, provider)
+  try {
+    const result = await signInWithPopup(auth, provider)
+    const u = result.user
+    return {
+      uid: u.uid,
+      email: u.email || "",
+      firstName: u.displayName?.split(" ")[0] || "",
+      lastName: u.displayName?.split(" ").slice(1).join(" ") || "",
+      phone: u.phoneNumber || "",
+      address: "",
+    }
+  } catch {
+    await signInWithRedirect(auth, provider)
+    return null
+  }
+}
+
+export async function getGoogleRedirectUser() {
+  if (typeof window === "undefined" || !auth) return null
+  const result = await getRedirectResult(auth)
+  if (!result) return null
   const u = result.user
   return {
     uid: u.uid,
@@ -46,7 +66,6 @@ export async function signInWithGoogle() {
     address: "",
   }
 }
-
 // Analytics يعمل فقط على المتصفح
 export const analyticsPromise = typeof window !== "undefined"
   ? isSupported().then((ok) => (ok ? getAnalytics(app) : null))
