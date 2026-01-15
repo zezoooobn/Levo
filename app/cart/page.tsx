@@ -131,16 +131,13 @@ export default function CartPage() {
     }))
   }
 
-  // إرسال الطلب
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
+  // معالجة الطلب (تستخدمها آلية السحب والزر التقليدي)
+  const processOrder = () => {
     if (cart.length === 0) {
       toast({ title: "السلة فارغة", description: "أضف منتجات قبل إتمام الطلب", variant: "destructive" })
-      return
+      return false
     }
 
-    // التحقق من البيانات المطلوبة
     if (
       !formData.firstName ||
       !formData.lastName ||
@@ -156,10 +153,9 @@ export default function CartPage() {
         description: "الرجاء ملء جميع الحقول المطلوبة",
         variant: "destructive",
       })
-      return
+      return false
     }
 
-    // إنشاء كائن المستخدم
     const orderUser = {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -171,25 +167,87 @@ export default function CartPage() {
       apartment: formData.apartment,
     }
 
-    // تحديث بيانات المستخدم في المخزن
     if (isLoggedIn) {
       updateUserInfo(orderUser)
     }
 
-    // إنشاء الطلب
     const newOrderId = createOrder()
-
     if (newOrderId) {
       setOrderId(newOrderId)
       setOrderComplete(true)
-      // clearCart() // createOrder might already clear cart or we should check store implementation. Usually it does.
-    } else {
-      toast({
-        title: "خطأ في إنشاء الطلب",
-        description: "حدث خطأ أثناء إنشاء الطلب. الرجاء المحاولة مرة أخرى",
-        variant: "destructive",
-      })
+      return true
     }
+    toast({
+      title: "خطأ في إنشاء الطلب",
+      description: "حدث خطأ أثناء إنشاء الطلب. الرجاء المحاولة مرة أخرى",
+      variant: "destructive",
+    })
+    return false
+  }
+
+  // مكوّن السحب للتأكيد
+  function SwipeToConfirm({ label, onConfirm }: { label: string; onConfirm: () => void }) {
+    const [dragPercent, setDragPercent] = useState(0)
+    const [isDragging, setIsDragging] = useState(false)
+    const trackRef = useState<HTMLDivElement | null>(null)[0]
+    const [trackEl, setTrackEl] = useState<HTMLDivElement | null>(null)
+
+    const startDrag = (e: React.MouseEvent | React.TouchEvent) => {
+      setIsDragging(true)
+      setDragPercent(0)
+    }
+
+    const moveDrag = (e: React.MouseEvent | React.TouchEvent) => {
+      if (!isDragging || !trackEl) return
+      const rect = trackEl.getBoundingClientRect()
+      let clientX =
+        "touches" in e && e.touches.length > 0 ? e.touches[0].clientX : (e as React.MouseEvent).clientX
+      const delta = Math.min(Math.max(clientX - rect.left, 0), rect.width)
+      const percent = Math.round((delta / rect.width) * 100)
+      setDragPercent(percent)
+    }
+
+    const endDrag = () => {
+      if (!isDragging) return
+      setIsDragging(false)
+      if (dragPercent >= 85) {
+        onConfirm()
+        setDragPercent(0)
+      } else {
+        setDragPercent(0)
+      }
+    }
+
+    return (
+      <div
+        ref={setTrackEl}
+        className="relative w-full h-14 rounded-full bg-muted overflow-hidden select-none"
+        onMouseMove={moveDrag}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchMove={moveDrag}
+        onTouchEnd={endDrag}
+      >
+        <div className="absolute inset-y-0 left-0 bg-primary/20 transition-[width] duration-150" style={{ width: `${dragPercent}%` }} />
+        <div
+          className={`absolute inset-y-1 left-1 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg 
+          ${dragPercent > 80 ? "animate-bounce" : ""}`}
+          style={{ transform: `translateX(${Math.max(dragPercent - 2, 0)}%)` }}
+          onMouseDown={startDrag}
+          onTouchStart={startDrag}
+        >
+          <CheckCircle className="h-5 w-5" />
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="font-medium">{label}</span>
+        </div>
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1">
+          {[...Array(5)].map((_, i) => (
+            <span key={i} className={`h-[3px] w-6 rounded-full ${i * 20 < dragPercent ? "bg-primary" : "bg-muted-foreground/20"}`} />
+          ))}
+        </div>
+      </div>
+    )
   }
 
   // عرض صفحة تأكيد الطلب
@@ -357,7 +415,7 @@ export default function CartPage() {
 
           {/* القسم الأيسر: نموذج الدفع */}
           <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => { e.preventDefault(); }}>
               <Card>
                 <CardHeader>
                   <CardTitle>تفاصيل الشحن والدفع</CardTitle>
@@ -451,9 +509,10 @@ export default function CartPage() {
                     <Textarea id="notes" name="notes" value={formData.notes} onChange={handleChange} placeholder="أي تعليمات خاصة للتوصيل..." />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full text-lg" disabled={cart.length === 0}>
-                    تأكيد الطلب ({total.toFixed(2)} ج.م)
-                  </Button>
+                  <SwipeToConfirm
+                    label={`اسحب لليمين لتأكيد الطلب (${total.toFixed(2)} ج.م)`}
+                    onConfirm={() => { processOrder() }}
+                  />
                 </CardContent>
               </Card>
             </form>

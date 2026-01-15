@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Heart, Minus, Plus, Share, ShoppingCart, Star, Check } from "lucide-react"
+import { Heart, Minus, Plus, Share, ShoppingCart, Star, Check, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -42,6 +42,8 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [selectedColor, setSelectedColor] = useState<string>("")
   const [selectedSize, setSelectedSize] = useState<string>("")
   const [activeTab, setActiveTab] = useState("description")
+  const [currentImage, setCurrentImage] = useState(0)
+  const [isAddingAnim, setIsAddingAnim] = useState(false)
 
   // استخدام متجر الحالة
   const { addToCart, addToWishlist, isInWishlist, removeFromWishlist } = useStore()
@@ -252,6 +254,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       title: "تمت الإضافة إلى السلة",
       description: `تمت إضافة ${product.name} إلى سلة التسوق`,
     })
+
+    setIsAddingAnim(true)
+    setTimeout(() => setIsAddingAnim(false), 1200)
   }
 
   // إذا لم يتم تحميل المنتج بعد
@@ -268,16 +273,46 @@ export default function ProductPage({ params }: { params: { id: string } }) {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* صور المنتج */}
         <div className="w-full lg:w-1/2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(product.images || ["/placeholder.svg?height=600&width=500"]).map((image, index) => (
-              <div key={index} className={`overflow-hidden rounded-lg ${index === 0 ? "md:col-span-2" : ""}`}>
-                <img
-                  src={image || "/placeholder.svg"}
-                  alt={`${product.name} - صورة ${index + 1}`}
-                  className="w-full h-auto object-cover"
+          <div className="relative rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden">
+            <div className="aspect-[3/4] w-full max-h-[75vh] flex items-center justify-center">
+              <img
+                src={(product.images && product.images[currentImage]) || "/placeholder.svg"}
+                alt={`${product.name} - صورة ${currentImage + 1}`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <button
+              aria-label="السابق"
+              className="absolute top-1/2 -translate-y-1/2 right-2 z-10 p-2 rounded-full bg-background/70 backdrop-blur shadow hover:bg-background"
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev + 1 < (product.images?.length || 1) ? prev + 1 : 0
+                )
+              }
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+            <button
+              aria-label="التالي"
+              className="absolute top-1/2 -translate-y-1/2 left-2 z-10 p-2 rounded-full bg-background/70 backdrop-blur shadow hover:bg-background"
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev - 1 >= 0 ? prev - 1 : Math.max((product.images?.length || 1) - 1, 0)
+                )
+              }
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2">
+              {Array.from({ length: product.images?.length || 1 }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`h-2 w-2 rounded-full transition-all ${i === currentImage ? "bg-primary w-4" : "bg-muted"}`}
+                  onClick={() => setCurrentImage(i)}
+                  aria-label={`اذهب للصورة ${i + 1}`}
                 />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
@@ -379,10 +414,10 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 mt-6">
+            <div className="relative flex flex-col sm:flex-row gap-4 mt-6">
               <Button
-                className={`flex-1 ${getCategoryButtonColor(product.category)}`}
                 size="lg"
+                className={`flex-1 ${getCategoryButtonColor(product.category)} h-14 text-base sm:h-12 sm:text-sm`}
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
@@ -391,12 +426,20 @@ export default function ProductPage({ params }: { params: { id: string } }) {
               <Button
                 variant="outline"
                 size="lg"
-                className={`flex-1 ${inWishlist ? "text-red-500" : ""}`}
+                className={`flex-1 ${inWishlist ? "text-red-500" : ""} h-14 text-base sm:h-12 sm:text-sm`}
                 onClick={handleWishlist}
               >
                 <Heart className={`mr-2 h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
                 {inWishlist ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
               </Button>
+              {isAddingAnim && (
+                <div className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2">
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary text-primary-foreground shadow-lg animate-in fade-in zoom-in-50 duration-300">
+                    <ShoppingCart className="h-4 w-4" />
+                    <span className="text-sm">تمت الإضافة</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Separator />
